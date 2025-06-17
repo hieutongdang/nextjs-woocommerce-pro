@@ -1,47 +1,103 @@
+'use client';
+
+import { useCallback } from 'react';
+import useEmblaCarousel from 'embla-carousel-react';
+import Image from 'next/image';
+
+const SLIDE_IMAGES = [
+  {
+    src: '/mock/sl01.webp',
+    alt: 'Coffee Promo',
+  },
+  {
+    src: '/mock/sl02.jpg',
+    alt: 'Juice Promo',
+  },
+  {
+    src: '/mock/sl03.jpg',
+    alt: 'Orange Promo',
+  },
+];
+
+const SIDE_BANNERS = [
+  {
+    src: '/mock/banner1.jpg',
+    alt: 'Juice',
+  },
+  {
+    src: '/mock/banner2.jpg',
+    alt: 'Orange',
+  },
+];
+
 export default function HeroBanner() {
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
+
+  const scrollPrev = useCallback(() => {
+    if (emblaApi) emblaApi.scrollPrev();
+  }, [emblaApi]);
+
+  const scrollNext = useCallback(() => {
+    if (emblaApi) emblaApi.scrollNext();
+  }, [emblaApi]);
+
   return (
     <section className="w-full max-w-[1440px] mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-      {/* Main Banner */}
-      <div className="lg:col-span-2 bg-gradient-to-r from-primary/10 to-primary/5 rounded-2xl flex flex-col md:flex-row items-center p-8 min-h-[320px] relative overflow-hidden shadow-sm">
-        <div className="flex-1 z-10">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Pure Coffee<br />Big discount</h2>
-          <p className="text-lg text-gray-700 mb-6">Save up to 50% on your first order</p>
-          <form className="flex max-w-md">
-            <input
-              type="email"
-              placeholder="Your email address"
-              className="flex-1 px-4 py-2 rounded-l-md border border-gray-200 focus:outline-none"
-            />
-            <button type="submit" className="px-6 py-2 bg-primary text-white rounded-r-md font-semibold hover:bg-primary/90 transition">Subscribe</button>
-          </form>
+      {/* Main Banner Slider */}
+      <div className="lg:col-span-2 relative rounded-md overflow-hidden shadow-sm">
+        <div className="embla overflow-hidden" ref={emblaRef}>
+          <div className="embla__container flex">
+            {SLIDE_IMAGES.map((slide, index) => (
+              <div key={index} className="embla__slide flex-[0_0_100%] min-w-0 relative">
+                <div className="relative w-full">
+                  <Image
+                    src={slide.src}
+                    alt={slide.alt}
+                    width={1200}
+                    height={600}
+                    className="w-full h-auto object-cover"
+                    priority={index === 0}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
-        <div className="flex-1 flex justify-end items-end z-10">
-          <img
-            src="/mock/coffee-banner.png"
-            alt="Coffee Promo"
-            className="w-48 md:w-64 lg:w-80 object-contain drop-shadow-xl"
-          />
-        </div>
-        {/* Decorative BG */}
-        <div className="absolute inset-0 bg-[url('/mock/hero-bg.svg')] bg-no-repeat bg-right-bottom opacity-10 pointer-events-none" />
+        {/* Navigation Buttons */}
+        <button
+          className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 rounded-full flex items-center justify-center shadow-md hover:bg-white transition"
+          onClick={scrollPrev}
+        >
+          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+        <button
+          className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 rounded-full flex items-center justify-center shadow-md hover:bg-white transition"
+          onClick={scrollNext}
+        >
+          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
       </div>
 
       {/* Side Banners */}
-      <div className="flex flex-col gap-6">
-        <div className="bg-yellow-50 rounded-2xl flex items-center p-6 min-h-[150px] shadow-sm">
-          <div className="flex-1">
-            <h3 className="text-lg font-bold text-yellow-900 mb-2">Delivered to your home</h3>
-            <a href="/products" className="text-primary font-semibold hover:underline">Shop now</a>
+      <div className="grid grid-cols-2 gap-4 sm:flex sm:flex-col sm:gap-6">
+        {SIDE_BANNERS.map((banner, index) => (
+          <div key={index} className="relative rounded-md overflow-hidden shadow-sm">
+            <div className="relative w-full">
+              <Image
+                src={banner.src}
+                alt={banner.alt}
+                width={600}
+                height={400}
+                className="w-full h-auto object-cover"
+                priority={index === 0}
+              />
+            </div>
           </div>
-          <img src="/mock/juice.png" alt="Juice" className="w-20 h-20 object-contain" />
-        </div>
-        <div className="bg-orange-50 rounded-2xl flex items-center p-6 min-h-[150px] shadow-sm">
-          <div className="flex-1">
-            <h3 className="text-lg font-bold text-orange-900 mb-2">Fresh & Organic</h3>
-            <a href="/products" className="text-primary font-semibold hover:underline">Shop now</a>
-          </div>
-          <img src="/mock/orange.png" alt="Orange" className="w-20 h-20 object-contain" />
-        </div>
+        ))}
       </div>
     </section>
   );

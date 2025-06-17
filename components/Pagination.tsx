@@ -26,31 +26,43 @@ export default function Pagination({
   return (
     <div className="flex justify-center items-center space-x-2 mt-4">
       {/* Previous Button */}
-      <a
-        href={currentPage > 1 ? `${baseUrl}?page=${currentPage - 1}` : undefined}
-        className={`px-3 py-2 rounded-md font-medium border transition-colors ${currentPage === 1 ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed' : 'bg-white text-primary border-primary hover:bg-primary/10'}`}
-        aria-disabled={currentPage === 1}
-      >
-        Previous
-      </a>
+      {currentPage > 1 ? (
+        <Link
+          href={`${baseUrl}?page=${currentPage - 1}`}
+          className="px-3 py-2 rounded-md font-medium border transition-colors bg-white text-primary border-primary hover:bg-primary/10"
+        >
+          Previous
+        </Link>
+      ) : (
+        <span className="px-3 py-2 rounded-md font-medium border transition-colors bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed">
+          Previous
+        </span>
+      )}
+      
       {/* Page Numbers */}
       {pageNumbers.map((page) => (
-        <a
+        <Link
           key={page}
           href={`${baseUrl}?page=${page}`}
           className={`px-3 py-2 rounded-md font-medium border transition-colors ${page === currentPage ? 'bg-primary text-white border-primary' : 'bg-white text-primary border-primary hover:bg-primary/10'}`}
         >
           {page}
-        </a>
+        </Link>
       ))}
+      
       {/* Next Button */}
-      <a
-        href={hasNextPage ? `${baseUrl}?page=${currentPage + 1}` : undefined}
-        className={`px-3 py-2 rounded-md font-medium border transition-colors ${!hasNextPage ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed' : 'bg-white text-primary border-primary hover:bg-primary/10'}`}
-        aria-disabled={!hasNextPage}
-      >
-        Next
-      </a>
+      {hasNextPage ? (
+        <Link
+          href={`${baseUrl}?page=${currentPage + 1}`}
+          className="px-3 py-2 rounded-md font-medium border transition-colors bg-white text-primary border-primary hover:bg-primary/10"
+        >
+          Next
+        </Link>
+      ) : (
+        <span className="px-3 py-2 rounded-md font-medium border transition-colors bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed">
+          Next
+        </span>
+      )}
     </div>
   );
 } 

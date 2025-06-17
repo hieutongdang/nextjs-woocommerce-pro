@@ -119,6 +119,15 @@ export const GET_ALL_CATEGORIES = gql`
         name
         slug
         count
+        parentId
+        children {
+          nodes {
+            id
+            name
+            slug
+            count
+          }
+        }
       }
     }
   }
@@ -132,6 +141,26 @@ export const GET_PARENT_CATEGORIES = gql`
         name
         slug
         count
+        image {
+          sourceUrl
+          altText
+        }
+        products(first: 10) {
+          nodes {
+            id
+            name
+            slug
+            image {
+              sourceUrl
+              altText
+            }
+            ... on SimpleProduct {
+              price
+              regularPrice
+              salePrice
+            }
+          }
+        }
       }
     }
   }
@@ -233,6 +262,28 @@ export const GET_TOP_CATEGORIES = gql`
             price
             regularPrice
             salePrice
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const GET_ALL_PARENT_CATEGORIES = gql`
+  query GetAllParentCategories($first: Int!) {
+    productCategories(first: $first, where: { parent: null }) {
+      nodes {
+        id
+        name
+        slug
+        count
+        parentId
+        children {
+          nodes {
+            id
+            name
+            slug
+            count
           }
         }
       }

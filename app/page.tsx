@@ -1,11 +1,12 @@
 import { Metadata } from 'next';
 import { client } from '@/lib/apollo-client';
-import { GET_LATEST_POSTS, GET_PARENT_CATEGORIES, GET_PRODUCTS_BY_CATEGORY } from '@/lib/graphql/queries';
+import { GET_LATEST_POSTS, GET_PARENT_CATEGORIES } from '@/lib/graphql/queries';
 import ProductCard from '@/components/ProductCard';
 import PostCard from '@/components/PostCard';
 import HeroBanner from '@/components/HeroBanner';
 import PromoCardsSection from '@/components/PromoCardsSection';
 import CategoryProductSection from '@/components/CategoryProductSection';
+import ProductCategories from '@/components/ProductCategories';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
@@ -20,23 +21,7 @@ async function getTopCategoriesWithProducts() {
       first: 4,
     },
   });
-  let categories = data.productCategories.nodes;
-  // Optionally sort by count or name, since menu_order is not available
-  // categories = categories.sort((a, b) => b.count - a.count); // Example: sort by product count desc
-
-  const categoriesWithProducts = await Promise.all(
-    categories.map(async (cat: any) => {
-      const { data: prodData } = await client.query({
-        query: GET_PRODUCTS_BY_CATEGORY,
-        variables: { slug: cat.slug, first: 10 },
-      });
-      return {
-        ...cat,
-        products: prodData.productCategory.products.nodes,
-      };
-    })
-  );
-  return categoriesWithProducts;
+  return data.productCategories.nodes;
 }
 
 async function getLatestPosts() {
@@ -56,9 +41,10 @@ export default async function Home() {
   return (
     <>
       <HeroBanner />
-      <PromoCardsSection />
+      {/* <PromoCardsSection /> */}
+      <ProductCategories />
       {categories.map((cat: any) => (
-        <CategoryProductSection key={cat.id} category={cat} products={cat.products} />
+        <CategoryProductSection key={cat.id} category={cat} products={cat.products.nodes} />
       ))}
       <div className="w-full max-w-[1440px] mx-auto px-4 py-8">
         {/* Latest Blog Posts Section */}

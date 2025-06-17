@@ -12,10 +12,10 @@ export default function CategoryProductSection({ category, products }: CategoryP
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl md:text-3xl font-bold text-gray-900">{category.name}</h2>
         <Link
-          href={`/products/${category.slug}`}
+          href={`/san-pham/${category.slug}`}
           className="px-4 py-2 bg-primary text-white rounded-md font-semibold hover:bg-primary/90 transition text-sm"
         >
-          View All Products
+          Xem tất cả
         </Link>
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">

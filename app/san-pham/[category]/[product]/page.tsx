@@ -37,7 +37,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
     variables: { slug: params.product },
   });
   if (!data.product) {
-    return { title: 'Product Not Found' };
+    return { title: 'Không tìm thấy sản phẩm' };
   }
   return {
     title: `${data.product.name} - NextShop`,
@@ -93,7 +93,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
           {/* Categories */}
           {product.productCategories?.nodes?.length > 0 && (
             <div className="mt-6">
-              <h2 className="text-sm font-medium text-gray-900">Categories</h2>
+              <h2 className="text-sm font-medium text-gray-900">Danh mục</h2>
               <div className="mt-2 flex flex-wrap gap-2">
                 {product.productCategories.nodes.map((category: any) => (
                   <span
@@ -111,7 +111,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
       
       {product.description && (
         <section className="mt-12">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Product Description</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Mô tả sản phẩm</h2>
           <div className="prose max-w-none text-gray-700" dangerouslySetInnerHTML={{ __html: product.description }} />
         </section>
       )}
