@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { Clock, Calendar, User } from 'lucide-react';
 
 interface PostCardProps {
   title: string;
@@ -45,15 +46,33 @@ export default function PostCard({
             className="text-gray-600 text-sm mb-4 line-clamp-3"
             dangerouslySetInnerHTML={{ __html: excerpt }}
           />
-          <time className="text-sm text-gray-500">
-            {new Date(date).toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-            })}
-          </time>
+          <div className="flex items-center gap-2">
+  <Calendar className="w-4 h-4 text-secondary/60" />
+  <time className="text-sm text-gray-500">
+    {new Date(date).toLocaleDateString('vi-VN')}
+  </time>
+</div>
+
         </div>
       </Link>
     </article>
+  );
+}
+
+export function PostCardSidebar({ title, slug, blogCategorySlug, date }: Omit<PostCardProps, 'excerpt' | 'featuredImage'>) {
+  const href = `/blog/${blogCategorySlug}/${slug}`;
+  return (
+    <div className="mb-2">
+      <Link href={href} className="text-primary hover:underline font-medium block">
+        {title}
+      </Link>
+      <div className="flex items-center gap-2">
+  <Calendar className="w-4 h-4 text-secondary/60" />
+  <time className="text-sm text-gray-500">
+    {new Date(date).toLocaleDateString('vi-VN')}
+  </time>
+</div>
+
+    </div>
   );
 } 

@@ -2,7 +2,8 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { toast } from 'react-toastify';
 import { 
   FaRegHeart, 
   FaHeart, 
@@ -14,9 +15,13 @@ import {
   FaFire,
   FaPercent
 } from 'react-icons/fa';
-import { formatPrice, isOnSale } from '@/lib/utils';
+import { formatPrice, isOnSale, addProductToCart } from '@/lib/utils';
+import { useCart } from '@/context/CartContext';
+import QuickViewModal from './QuickViewModal';
+import WishlistButton from './WishlistButton';
 
 interface ProductCardProps {
+  id: string;
   name: string;
   slug: string;
   categorySlug: string;
@@ -36,6 +41,7 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({
+  id,
   name,
   slug,
   categorySlug,
@@ -50,9 +56,10 @@ export default function ProductCard({
   stockStatus = 'in_stock',
   galleryImages = [],
 }: ProductCardProps) {
-  const [isWishlisted, setIsWishlisted] = useState(false);
+  const { addToCart } = useCart();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isImageLoading, setIsImageLoading] = useState(true);
+  const [isQuickViewOpen, setQuickViewOpen] = useState(false);
 
   const onSale = isOnSale(regularPrice, salePrice);
   const imageUrl = image?.sourceUrl || '/images/placeholder.svg';
@@ -92,27 +99,36 @@ export default function ProductCard({
     return stars;
   };
 
-  const handleWishlistToggle = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsWishlisted(!isWishlisted);
-  };
-
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    // Add to cart logic here
-    console.log('Added to cart:', name);
+    
+    addProductToCart({
+      id,
+      name,
+      price,
+      image
+    }, addToCart);
+
+    toast.success('Đã thêm vào giỏ hàng', {
+      position: "top-right",
+      autoClose: 2000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+    });
   };
 
   const handleQuickView = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    // Quick view logic here
-    console.log('Quick view:', name);
+    setQuickViewOpen(true);
   };
 
   return (
+    <>
     <div className="group relative bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:border-primary/20 hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]">
       
       {/* Badges */}
@@ -142,17 +158,19 @@ export default function ProductCard({
       </div>
 
       {/* Wishlist Button */}
-      <button
-        onClick={handleWishlistToggle}
-        className="absolute top-3 right-3 z-20 p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-lg hover:bg-white transition-all duration-300 transform hover:scale-110"
-        title={isWishlisted ? 'Bỏ khỏi yêu thích' : 'Thêm vào yêu thích'}
-      >
-        {isWishlisted ? (
-          <FaHeart className="text-red-500" size={16} />
-        ) : (
-          <FaRegHeart className="text-gray-600 group-hover:text-red-500 transition-colors" size={16} />
-        )}
-      </button>
+      <div className="absolute top-3 right-3 z-20">
+        <WishlistButton
+          product={{
+            id,
+            name,
+            slug,
+            image: imageUrl,
+            price: price || '',
+            regularPrice: regularPrice || '',
+            salePrice: salePrice || '',
+          }}
+        />
+      </div>
 
       <Link href={href} className="block">
         {/* Image Container */}
@@ -294,5 +312,26 @@ export default function ProductCard({
         </div>
       )}
     </div>
+      <QuickViewModal
+        isOpen={isQuickViewOpen}
+        onClose={() => setQuickViewOpen(false)}
+        product={{
+          id,
+          name,
+          slug,
+          categorySlug,
+          image,
+          price,
+          regularPrice,
+          salePrice,
+          rating,
+          reviewCount,
+          isNew,
+          isBestSeller,
+          stockStatus,
+          galleryImages,
+        }}
+      />
+    </>
   );
 }

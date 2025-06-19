@@ -20,6 +20,7 @@ export default function ProductGrid({ products, title, categorySlug, className =
         {products.map((product) => (
           <ProductCard
             key={product.id}
+            id={product.id}
             name={product.name}
             slug={product.slug}
             categorySlug={categorySlug}

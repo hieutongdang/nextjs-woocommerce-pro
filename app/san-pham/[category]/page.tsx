@@ -69,6 +69,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
         {products.map((product: any) => (
           <ProductCard
             key={product.id}
+            id={product.id}
             name={product.name}
             slug={product.slug}
             categorySlug={category.slug}

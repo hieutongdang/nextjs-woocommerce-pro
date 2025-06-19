@@ -289,4 +289,45 @@ export const GET_ALL_PARENT_CATEGORIES = gql`
       }
     }
   }
+`;
+
+export const GET_PARENT_AND_CHILD_CATEGORIES = gql`
+  query GetParentAndChildCategories($first: Int!) {
+    productCategories(first: $first, where: { parent: null }) {
+      nodes {
+        id
+        name
+        slug
+        count
+        image {
+          sourceUrl
+          altText
+        }
+        children {
+          nodes {
+            id
+            name
+            slug
+            count
+            image {
+              sourceUrl
+              altText
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const CREATE_ORDER = gql`
+  mutation CreateOrder($input: CreateOrderInput!) {
+    createOrder(input: $input) {
+      order {
+        id
+        orderNumber
+        status
+      }
+    }
+  }
 `; 

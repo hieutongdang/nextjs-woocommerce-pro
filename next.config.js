@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ['nextjs.danghieu.com'],
+    domains: [process.env.NEXT_PUBLIC_SITE_DOMAIN],
   },
 };
 

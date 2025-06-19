@@ -15,19 +15,12 @@ import {
 } from 'react-icons/fa';
 import { client } from '@/lib/apollo-client';
 import { GET_ALL_PARENT_CATEGORIES } from '@/lib/graphql/queries';
-
-interface Category {
-  id: string;
-  name: string;
-  slug: string;
-  count: number;
-  parentId?: string | null;
-  children?: { nodes: Category[] };
-}
+import { useWishlist } from '@/context/WishlistContext';
+import { useCart } from '@/context/CartContext';
+import { useProductCategories, Category } from '@/context/ProductCategoriesContext';
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [categories, setCategories] = useState<Category[]>([]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [activeSubmenu, setActiveSubmenu] = useState<string | null>(null);
@@ -35,21 +28,9 @@ export default function Header() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const dropdownTimeout = useRef<NodeJS.Timeout | null>(null);
-
-  useEffect(() => {
-    async function fetchCategories() {
-      try {
-        const { data } = await client.query({
-          query: GET_ALL_PARENT_CATEGORIES,
-          variables: { first: 100 },
-        });
-        setCategories(data.productCategories.nodes);
-      } catch (error) {
-        console.error('Error fetching categories:', error);
-      }
-    }
-    fetchCategories();
-  }, []);
+  const { wishlistItems } = useWishlist();
+  const { cartCount } = useCart();
+  const { parentAndChildCategories, isLoading, error } = useProductCategories();
 
   // Handle click outside to close dropdown and mobile menu
   useEffect(() => {
@@ -116,7 +97,7 @@ export default function Header() {
           <div className="max-w-[1440px] mx-auto px-4 md:px-8 py-2">
             <div className="flex justify-between items-center text-sm text-gray-600">
               <div className="flex items-center gap-6">
-                <span>📧 info@cuanhua.com.vn</span>
+                <span>📧 {process.env.NEXT_PUBLIC_SUPPORT_EMAIL}</span>
                 <span>🕒 8:00 - 18:00 (T2-T7)</span>
               </div>
               <div className="flex items-center gap-4">
@@ -145,10 +126,10 @@ export default function Header() {
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2 text-2xl font-bold text-primary">
               <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center text-white font-bold">
-                SD
+                CN
               </div>
               <span className="hidden sm:block bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
-                SaigonDoor
+                Cuanhua.com.vn
               </span>
             </Link>
 
@@ -201,7 +182,7 @@ export default function Header() {
                     onMouseEnter={handleDropdownEnter}
                     onMouseLeave={handleDropdownLeave}
                   >
-                    {categories.map((parent) => (
+                    {parentAndChildCategories.map((parent: Category) => (
                       <div key={parent.id} className="group/item relative">
                         <Link
                           href={`/san-pham/${parent.slug}`}
@@ -212,10 +193,9 @@ export default function Header() {
                             <FaChevronRight className="w-3 h-3 opacity-50" />
                           )}
                         </Link>
-                        
                         {parent.children && parent.children.nodes.length > 0 && (
                           <div className="absolute left-full top-0 ml-2 w-64 bg-white border border-gray-100 rounded-2xl shadow-xl py-2 z-50 opacity-0 invisible group-hover/item:opacity-100 group-hover/item:visible transition-all duration-200">
-                            {parent.children.nodes.map((child) => (
+                            {parent.children.nodes.map((child: Category) => (
                               <Link
                                 key={child.id}
                                 href={`/san-pham/${child.slug}`}
@@ -257,21 +237,25 @@ export default function Header() {
               {/* Action buttons */}
               <div className="flex items-center gap-2 md:gap-3">
                 <Link 
-                  href="#" 
+                  href="/wishlist" 
                   className="p-2 md:p-2.5 rounded-lg hover:bg-gray-100 transition-colors relative group" 
                   title="Yêu thích"
                 >
                   <FaRegHeart size={18} className="text-gray-600 group-hover:text-red-500 transition-colors" />
-                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">0</span>
+                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                    {wishlistItems.length}
+                  </span>
                 </Link>
                 
                 <Link 
-                  href="#" 
+                  href="/cart" 
                   className="p-2 md:p-2.5 rounded-lg hover:bg-gray-100 transition-colors relative group" 
                   title="Giỏ hàng"
                 >
                   <FaShoppingCart size={18} className="text-gray-600 group-hover:text-primary transition-colors" />
-                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-primary text-white text-xs rounded-full flex items-center justify-center">0</span>
+                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-primary text-white text-xs rounded-full flex items-center justify-center">
+                    {cartCount}
+                  </span>
                 </Link>
                 
                 <Link 
@@ -285,11 +269,11 @@ export default function Header() {
 
               {/* Phone button - Desktop */}
               <a 
-                href="tel:0987483960" 
+                href="tel:{process.env.NEXT_PUBLIC_HOTLINE}" 
                 className="hidden xl:flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl font-medium hover:from-red-600 hover:to-red-700 transition-all duration-300 shadow-lg hover:shadow-red-500/25 transform hover:scale-105"
               >
                 <FaPhoneAlt size={14} />
-                <span className="font-semibold">0987 483 960</span>
+                <span className="font-semibold">{process.env.NEXT_PUBLIC_HOTLINE}</span>
               </a>
             </div>
           </div>
@@ -333,9 +317,9 @@ export default function Header() {
           <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-gradient-to-r from-primary/5 to-primary/10">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center text-white font-bold text-sm">
-                SD
+                CD
               </div>
-              <span className="font-bold text-primary">SaigonDoor</span>
+              <span className="font-bold text-primary">Cuanhua.com.vn</span>
             </div>
             <button
               onClick={closeMobileMenu}
@@ -376,7 +360,7 @@ export default function Header() {
                 
                 {activeSubmenu === 'products' && (
                   <div className="ml-4 mt-2 space-y-1 animate-in slide-in-from-top-2 duration-200">
-                    {categories.map((parent) => (
+                    {parentAndChildCategories.map((parent: Category) => (
                       <div key={parent.id}>
                         <div className="flex items-center justify-between">
                           <Link
@@ -398,7 +382,7 @@ export default function Header() {
                         
                         {activeSubmenu === parent.id && parent.children && (
                           <div className="ml-4 mt-1 space-y-1 animate-in slide-in-from-top-2 duration-200">
-                            {parent.children.nodes.map((child) => (
+                            {parent.children.nodes.map((child: Category) => (
                               <Link
                                 key={child.id}
                                 href={`/san-pham/${child.slug}`}
@@ -437,11 +421,11 @@ export default function Header() {
           {/* Mobile menu footer */}
           <div className="p-4 border-t border-gray-100 bg-gray-50">
             <a 
-              href="tel:0987483960" 
+              href="tel:{process.env.NEXT_PUBLIC_HOTLINE}" 
               className="flex items-center justify-center gap-3 w-full py-3 px-4 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl font-semibold hover:from-red-600 hover:to-red-700 transition-all duration-300 shadow-lg"
             >
               <FaPhoneAlt size={16} />
-              <span>Gọi ngay: 0987 483 960</span>
+              <span>Gọi ngay: {process.env.NEXT_PUBLIC_HOTLINE}</span>
             </a>
           </div>
         </div>

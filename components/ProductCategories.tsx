@@ -11,24 +11,13 @@ import {
   FaChevronRight, 
   FaThLarge,
   FaArrowRight,
-  FaSpinner
+  FaSpinner,
+  FaChevronDown
 } from 'react-icons/fa';
-
-interface Category {
-  id: string;
-  name: string;
-  slug: string;
-  count?: number;
-  image?: {
-    sourceUrl: string;
-    altText: string;
-  };
-}
+import { useProductCategories, Category } from '@/context/ProductCategoriesContext';
 
 export default function ProductCategories() {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { parentCategories, isLoading, error } = useProductCategories();
   const [canScrollPrev, setCanScrollPrev] = useState(false);
   const [canScrollNext, setCanScrollNext] = useState(false);
 
@@ -65,26 +54,6 @@ export default function ProductCategories() {
     emblaApi.on('reInit', onSelect);
   }, [emblaApi, onSelect]);
 
-  useEffect(() => {
-    async function fetchCategories() {
-      try {
-        setIsLoading(true);
-        setError(null);
-        const { data } = await client.query({
-          query: GET_PARENT_CATEGORIES,
-          variables: { first: 20 },
-        });
-        setCategories(data.productCategories.nodes);
-      } catch (err) {
-        setError('Không thể tải danh mục sản phẩm');
-        console.error('Error fetching categories:', err);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    fetchCategories();
-  }, []);
-
   if (error) {
     return (
       <section className="w-full max-w-[1440px] mx-auto py-8">
@@ -113,7 +82,7 @@ export default function ProductCategories() {
             <FaThLarge className="text-white" size={18} />
           </div>
           <div>
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 uppercase">
               Danh Mục Sản Phẩm
             </h2>
             <p className="text-gray-600 text-sm md:text-base">
@@ -153,21 +122,21 @@ export default function ProductCategories() {
       </div>
 
       {/* Loading state */}
-      {isLoading && (
+      {/* {isLoading && (
         <div className="flex items-center justify-center py-16">
           <div className="flex items-center gap-3 text-gray-600">
             <FaSpinner className="animate-spin" size={20} />
             <span>Đang tải danh mục...</span>
           </div>
         </div>
-      )}
+      )} */}
 
       {/* Categories carousel */}
-      {!isLoading && categories.length > 0 && (
+      {!isLoading && parentCategories.length > 0 && (
         <div className="relative">
           <div className="overflow-hidden rounded-2xl" ref={emblaRef}>
             <div className="flex gap-4">
-              {categories.map((category, index) => (
+              {parentCategories.map((category: Category, index: number) => (
                 <div 
                   key={category.id} 
                   className="flex-[0_0_50%] sm:flex-[0_0_50%] md:flex-[0_0_33.33%] lg:flex-[0_0_25%] xl:flex-[0_0_20%] 2xl:flex-[0_0_16.66%] min-w-0"
@@ -201,7 +170,7 @@ export default function ProductCategories() {
       )}
 
       {/* Empty state */}
-      {!isLoading && categories.length === 0 && (
+      {!isLoading && parentCategories.length === 0 && (
         <div className="text-center py-16">
           <div className="text-gray-400 mb-4">
             <FaThLarge size={48} className="mx-auto opacity-50" />
@@ -286,5 +255,128 @@ function CategoryCard({ category, index }: { category: Category; index: number }
       {/* Bottom border animation */}
       <div className="h-1 bg-gradient-to-r from-primary to-primary/60 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
     </Link>
+  );
+}
+
+// Add a widget version for sidebar use
+
+export function ProductCategoriesWidget() {
+  const { parentAndChildCategories, isLoading, error } = useProductCategories();
+  const [expanded, setExpanded] = useState<{ [key: string]: boolean }>({});
+
+  const toggleExpand = (id: string) => {
+    setExpanded(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  if (error) {
+    return (
+      <div className="bg-gradient-to-r from-red-50 to-red-100 border border-red-200 rounded-xl p-4 shadow-sm">
+        <div className="flex items-center space-x-2">
+          <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+          <span className="text-red-700 font-medium">{error}</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+        <div className="animate-pulse">
+          <div className="flex items-center space-x-3 mb-6">
+            <div className="w-6 h-6 bg-gray-300 rounded-lg"></div>
+            <div className="h-5 bg-gray-300 rounded-lg w-32"></div>
+          </div>
+          <div className="space-y-4">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="space-y-2">
+                <div className="h-4 bg-gray-200 rounded-lg w-full"></div>
+                <div className="ml-6 space-y-1">
+                  <div className="h-3 bg-gray-100 rounded w-3/4"></div>
+                  <div className="h-3 bg-gray-100 rounded w-1/2"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-primary-50 to-indigo-50 px-6 py-4 border-b border-gray-100">
+        <div className="flex items-center space-x-3">
+          <div className="p-2 bg-white rounded-lg shadow-sm">
+            <FaThLarge className="w-5 h-5 text-primary" />
+          </div>
+          <h3 className="text-lg font-semibold text-primary">Danh mục sản phẩm</h3>
+        </div>
+      </div>
+
+      {/* Categories List */}
+      <div className="p-6">
+        <div className="space-y-2">
+          {parentAndChildCategories.map((cat: Category) => (
+            <div key={cat.id} className="group">
+              {/* Parent Category */}
+              <div className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                <div className="flex items-center space-x-3 flex-1 min-w-0">
+                  <FaThLarge className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                  <Link
+                    href={`/san-pham/${cat.slug}`}
+                    className="text-gray-800 hover:text-blue-600 font-medium truncate transition-colors duration-200 flex-1"
+                  >
+                    {cat.name}
+                    </Link>
+                </div>
+                
+                {cat.children && cat.children.nodes.length > 0 && (
+                  <button
+                    type="button"
+                    aria-label={expanded[cat.id] ? 'Thu gọn' : 'Mở rộng'}
+                    onClick={() => toggleExpand(cat.id)}
+                    className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 ml-2"
+                  >
+                    {expanded[cat.id] ? 
+                      <FaChevronDown className="w-3 h-3 transform transition-transform duration-200" /> : 
+                      <FaChevronRight className="w-3 h-3 transform transition-transform duration-200" />
+                    }
+                  </button>
+                )}
+              </div>
+
+              {/* Child Categories */}
+              {cat.children && cat.children.nodes.length > 0 && (
+                <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                  expanded[cat.id] ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                }`}>
+                  <div className="ml-7 mt-2 space-y-1 pb-2">
+                    {cat.children.nodes.map((child: Category, index) => (
+                      <div 
+                        key={child.id}
+                        className={`transform transition-all duration-300 ${
+                          expanded[cat.id] ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'
+                        }`}
+                        style={{ transitionDelay: `${index * 50}ms` }}
+                      >
+                        <Link
+                          href={`/san-pham/${child.slug}`}
+                          className="flex items-center space-x-2 p-2 rounded-lg text-sm text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 group/child"
+                        >
+                          <div className="w-1.5 h-1.5 bg-gray-300 rounded-full group-hover/child:bg-blue-500 transition-colors duration-200"></div>
+                          <span className="truncate">{child.name}</span>
+                          </Link>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }

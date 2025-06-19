@@ -1,7 +1,7 @@
 import { ApolloClient, InMemoryCache, HttpLink } from '@apollo/client';
 
 const httpLink = new HttpLink({
-  uri: 'https://nextjs.danghieu.com/graphql',
+  uri: process.env.NEXT_PUBLIC_WORDPRESS_API_URL,
 });
 
 export const client = new ApolloClient({

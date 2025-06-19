@@ -1,9 +1,11 @@
 import { Metadata } from 'next';
-import Image from 'next/image';
 import { client } from '@/lib/apollo-client';
 import { GET_PRODUCT_BY_SLUG, GET_ALL_CATEGORIES, GET_PRODUCTS_BY_CATEGORY } from '@/lib/graphql/queries';
 import { notFound } from 'next/navigation';
-import { formatPrice, isOnSale } from '@/lib/utils';
+import Sidebar from '@/components/Sidebar';
+import { ProductCategoriesWidget } from '@/components/ProductCategories';
+import { LatestPostsWidget } from '@/components/Sidebar';
+import ProductDetailContent from '@/components/ProductDetailContent';
 
 interface ProductPageProps {
   params: {
@@ -56,65 +58,22 @@ async function getProduct(slug: string) {
   return data.product;
 }
 
-export default async function ProductPage({ params }: ProductPageProps) {
-  const product = await getProduct(params.product);
-  const imageUrl = product.image?.sourceUrl || '/images/placeholder.svg';
-  const imageAlt = product.image?.altText || product.name;
-  const onSale = isOnSale(product.regularPrice, product.salePrice);
-
+export default function ProductPage({ params }: ProductPageProps) {
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Product Image */}
-        <div className="aspect-w-1 aspect-h-1 w-full overflow-hidden rounded-lg bg-gray-200">
-          <Image
-            src={imageUrl}
-            alt={imageAlt}
-            width={800}
-            height={800}
-            className="h-full w-full object-cover object-center"
-            priority
-          />
+    <div className="w-full max-w-[1440px] mx-auto px-4 py-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {/* Main Product Section - 9 columns */}
+        <div className="lg:col-span-9">
+          <ProductDetailContent slug={params.product} category={params.category} />
         </div>
-
-        {/* Product Details */}
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">{product.name}</h1>
-          <div className="mb-6">
-            {onSale ? (
-              <div className="flex items-center">
-                <p className="text-2xl font-medium text-red-600">{formatPrice(product.salePrice)}</p>
-                <p className="ml-2 text-lg text-gray-500 line-through">{formatPrice(product.regularPrice)}</p>
-              </div>
-            ) : (
-              <p className="text-2xl font-medium text-gray-900">{formatPrice(product.regularPrice)}</p>
-            )}
-          </div>
-          {/* Categories */}
-          {product.productCategories?.nodes?.length > 0 && (
-            <div className="mt-6">
-              <h2 className="text-sm font-medium text-gray-900">Danh mục</h2>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {product.productCategories.nodes.map((category: any) => (
-                  <span
-                    key={category.id}
-                    className="inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium bg-gray-100 text-gray-800"
-                  >
-                    {category.name}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
+        {/* Sidebar - 3 columns */}
+        <div className="lg:col-span-3">
+          <Sidebar>
+            <ProductCategoriesWidget />
+            <LatestPostsWidget />
+          </Sidebar>
         </div>
       </div>
-      
-      {product.description && (
-        <section className="mt-12">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Mô tả sản phẩm</h2>
-          <div className="prose max-w-none text-gray-700" dangerouslySetInnerHTML={{ __html: product.description }} />
-        </section>
-      )}
     </div>
   );
 } 

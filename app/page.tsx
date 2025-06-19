@@ -8,6 +8,13 @@ import PromoCardsSection from '@/components/PromoCardsSection';
 import CategoryProductSection from '@/components/CategoryProductSection';
 import ProductCategories from '@/components/ProductCategories';
 import Link from 'next/link';
+import { 
+  FaChevronLeft, 
+  FaChevronRight, 
+  FaThLarge,
+  FaArrowRight,
+  FaSpinner
+} from 'react-icons/fa';
 
 export const metadata: Metadata = {
   title: 'NextShop - Modern eCommerce Store',
@@ -43,8 +50,9 @@ export default async function Home() {
       <HeroBanner />
       {/* <PromoCardsSection /> */}
       <ProductCategories />
-      {categories.map((cat: any) => (
-        <CategoryProductSection key={cat.id} category={cat} products={cat.products.nodes} />
+      {categories.filter((cat: any) => cat.products && cat.products.nodes && cat.products.nodes.length > 0)
+        .map((cat: any) => (
+          <CategoryProductSection key={cat.id} category={cat} products={cat.products.nodes} />
       ))}
       <div className="w-full max-w-[1440px] mx-auto px-4 py-8">
         {/* Latest Blog Posts Section */}
@@ -66,9 +74,9 @@ export default async function Home() {
           <div className="flex justify-center">
             <Link
               href="/blog"
-              className="px-6 py-3 bg-primary text-white rounded-md font-semibold hover:bg-primary/90 transition"
-            >
-              Xem tất cả
+              className="hidden lg:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary/10 to-primary/5 text-primary rounded-xl hover:from-primary/20 hover:to-primary/10 transition-all duration-300 font-medium"
+        >
+              Xem tất cả <FaArrowRight size={12} />
             </Link>
           </div>
         </section>

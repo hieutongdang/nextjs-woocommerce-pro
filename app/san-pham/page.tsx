@@ -52,6 +52,7 @@ export default async function ProductsPage({
         {products.map((product: any) => (
           <ProductCard
             key={product.id}
+            id={product.id}
             name={product.name}
             slug={product.slug}
             categorySlug={product.productCategories?.nodes?.[0]?.slug || 'uncategorized'}
