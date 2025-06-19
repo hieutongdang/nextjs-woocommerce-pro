@@ -3,8 +3,18 @@ import { useEffect, useState } from "react";
 import { gql, useQuery } from "@apollo/client";
 import { Clock, Calendar, User } from "lucide-react";
 
-const GET_POST_BY_SLUG = gql`
-  query GetPostBySlug($id: ID!, $idType: PostIdType!) {
+// Query to get database ID by slug
+const GET_POST_ID_BY_SLUG = gql`
+  query GetPostIdBySlug($slug: String!) {
+    postBy(slug: $slug) {
+      databaseId
+    }
+  }
+`;
+
+// Existing query to get post by database ID
+const GET_POST_BY_ID = gql`
+  query GetPostById($id: ID!, $idType: PostIdType!) {
     post(id: $id, idType: $idType) {
       id
       title
@@ -100,17 +110,22 @@ function TableOfContents({ headings }: { headings: { level: number; text: string
 }
 
 export default function BlogPostContent({ slug }: { slug: string; category: string }) {
-  console.log('BlogPostContent slug:', slug);
-  const { data, loading, error } = useQuery(GET_POST_BY_SLUG, {
-    variables: { id: slug, idType: 'SLUG' },
-    fetchPolicy: 'network-only',
+  // Step 1: Get database ID from slug
+  const { data: idData, loading: idLoading, error: idError } = useQuery(GET_POST_ID_BY_SLUG, {
+    variables: { slug },
   });
-  console.log('GraphQL variables:', { id: slug, idType: 'SLUG' });
-  console.log('GraphQL data:', data);
-  console.log('GraphQL error:', error);
 
-  if (loading) return <SkeletonPost />;
-  if (error || !data?.post) return <div className="text-red-500">Không tìm thấy bài viết.</div>;
+  const databaseId = idData?.postBy?.databaseId;
+
+  // Step 2: Use database ID to fetch post
+  const { data, loading, error } = useQuery(GET_POST_BY_ID, {
+    skip: !databaseId,
+    variables: { id: databaseId, idType: "DATABASE_ID" },
+    fetchPolicy: "network-only",
+  });
+
+  if (idLoading || loading) return <SkeletonPost />;
+  if (idError || error || !data?.post) return <div className="text-red-500">Không tìm thấy bài viết.</div>;
 
   const post = data.post;
   const headings = extractHeadings(post.content);
